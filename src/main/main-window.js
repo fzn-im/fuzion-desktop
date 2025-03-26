@@ -178,7 +178,9 @@ class MainWindow {
     globalShortcut.register(
       'CommandOrControl+Shift+i',
       () => {
-        this.window.webContents.openDevTools();
+        if (this.window.isFocused()) {
+          this.window.webContents.openDevTools();
+        }
       },
     );
 
