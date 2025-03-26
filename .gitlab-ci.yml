@@ -1,0 +1,171 @@
+stages:
+  - test
+  - build
+
+# === TEST ===
+
+.test:
+  stage: test
+  script:
+    - docker build . -t fuzion-web:JOB-$CI_JOB_ID
+  only:
+    - merge_requests
+
+linux test:
+  extends: .test
+  tags:
+    - linux
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - npm run build:preload
+    - npm run dist
+
+darwin-arm64 test:
+  extends: .test
+  tags:
+    - darwin-arm64
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - npm run build:preload
+    - npm run dist
+
+windows test:
+  extends: .test
+  tags:
+    - windows10
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - npm run build:preload
+    - npm run dist
+
+# === BUILD RELEASE ===
+
+.build-release:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+(-r[0-9]*)?$/'
+
+linux-build release:
+  extends: .build-release
+  tags:
+    - linux
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - node scripts/extract-version.js $CI_COMMIT_TAG
+    - npm run build:js
+    - npm run dist
+    - npm run publish:linux
+
+darwin-arm64-build release:
+  extends: .build-release
+  tags:
+    - darwin-arm64
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - node scripts/extract-version.js $CI_COMMIT_TAG
+    - npm run build:js
+    - npm run dist
+    - npm run publish:mac
+
+windows-build release:
+  extends: .build-release
+  tags:
+    - windows10
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - node scripts/extract-version.js $Env:CI_COMMIT_TAG
+    - npm run build:js
+    - npm run dist
+    - npm run publish:win
+
+# === BUILD STAGING ===
+
+.build-staging:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+-(staging)(-r[0-9]*)?$/'
+
+linux-build staging:
+  extends: .build-staging
+  tags:
+    - linux
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - npm run build:preload
+    - npm run dist
+
+darwin-arm64-build staging:
+  extends: .build-staging
+  tags:
+    - darwin-arm64
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - npm run build:preload
+    - npm run dist
+
+windows-build staging:
+  extends: .build-staging
+  tags:
+    - windows10
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - npm run build:preload
+    - npm run dist
+
+# === BUILD TESTING ===
+
+.build-testing:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+-(testing)(-r[0-9]*)?$/'
+
+linux-build testing:
+  extends: .build-testing
+  tags:
+    - linux
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - npm run build:preload
+    - npm run dist
+
+darwin-arm64-build testing:
+  extends: .build-testing
+  tags:
+    - darwin-arm64
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - npm run build:preload
+    - npm run dist
+
+windows-build testing:
+  extends: .build-testing
+  tags:
+    - windows10
+  script:
+    - node --version
+    - rm package-lock.json
+    - npm install
+    - npm run build:preload
+    - npm run dist
