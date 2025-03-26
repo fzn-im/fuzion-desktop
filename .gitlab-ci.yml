@@ -59,7 +59,7 @@ linux-build release:
   tags:
     - linux
   script:
-    - apk add nodejs
+    - apk add nodejs git
     - node --version
     - rm package-lock.json
     - npm install
