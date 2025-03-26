@@ -1,7 +1,5 @@
 default:
   image: node:23-alpine
-  before_script:
-    - apk add git
 
 stages:
   - test
@@ -61,6 +59,7 @@ linux-build release:
   tags:
     - linux
   script:
+    - apk add nodejs
     - node --version
     - rm package-lock.json
     - npm install
