@@ -9,8 +9,6 @@ stages:
 
 .test:
   stage: test
-  script:
-    - docker build . -t fuzion-web:JOB-$CI_JOB_ID
   only:
     - merge_requests
 
@@ -53,6 +51,10 @@ windows test:
   stage: build
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+(-r[0-9]*)?$/'
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: './.secrets'
+  script:
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
 
 linux-build release:
   extends: .build-release
