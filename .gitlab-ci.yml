@@ -53,14 +53,13 @@ windows test:
     - if: '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+(-r[0-9]*)?$/'
   variables:
     SECURE_FILES_DOWNLOAD_PATH: './.secrets'
-  script:
-    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
 
 linux-build release:
   extends: .build-release
   tags:
     - linux
   script:
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - apk add nodejs git libc6-compat
     - node --version
     - rm package-lock.json
@@ -75,6 +74,7 @@ darwin-arm64-build release:
   tags:
     - darwin-arm64
   script:
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - node --version
     - rm package-lock.json
     - npm install
@@ -88,6 +88,7 @@ windows-build release:
   tags:
     - windows10
   script:
+    - powershell -Command "& { (Invoke-WebRequest -Uri https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer.ps1 -UseBasicParsing).Content | Invoke-Expression }"
     - node --version
     - rm package-lock.json
     - npm install
