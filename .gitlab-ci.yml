@@ -59,8 +59,8 @@ linux-build release:
   tags:
     - linux
   script:
+    - apk add nodejs git libc6-compat curl bash
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - apk add nodejs git libc6-compat
     - node --version
     - rm package-lock.json
     - npm install
