@@ -1,6 +1,12 @@
-
 const { spawnSync } = require('node:child_process');
 const { basename } = require('path');
+
+if (!process.env.DEST_SCP_DIST) {
+  console.error(
+    'DEST_SCP_DIST is not set. Set it to the scp destination base, e.g. user@host:/var/www/dist',
+  );
+  process.exit(1);
+}
 
 [
   'dist/fuzion.tar.gz',

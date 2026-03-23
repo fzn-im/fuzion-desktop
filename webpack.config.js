@@ -3,6 +3,16 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { DefinePlugin } = require('webpack');
 
+const sassLoaderOptions = {
+  api: 'modern-compiler',
+  sassOptions: {
+    loadPaths: [ path.resolve(__dirname, '.'), path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules') ],
+  },
+  sourceMap: true,
+};
+
+const mode = 'production';
+
 const tsRules = [
   {
     test: /\.ts$/,
@@ -56,12 +66,7 @@ const tsRules = [
           },
           {
             loader: 'sass-loader',
-            options: {
-              sassOptions: {
-                includePaths: [ '.', './src', './node_modules' ],
-              },
-              sourceMap: true,
-            },
+            options: sassLoaderOptions,
           },
         ],
       },
@@ -72,12 +77,7 @@ const tsRules = [
           { loader: 'resolve-url-loader', options: { sourceMap: true } },
           {
             loader: 'sass-loader',
-            options: {
-              sassOptions: {
-                includePaths: [ '.', './src', './node_modules' ],
-              },
-              sourceMap: true,
-            },
+            options: sassLoaderOptions,
           },
         ],
       },
@@ -87,6 +87,7 @@ const tsRules = [
 
 module.exports = [
   {
+    mode,
     entry: './src/host-preload/index.js',
     target: 'electron-main',
     output: {
@@ -106,6 +107,7 @@ module.exports = [
     ],
   },
   {
+    mode,
     entry: './src/guest-preload/index.js',
     target: 'electron-main',
     output: {
@@ -125,6 +127,7 @@ module.exports = [
     ],
   },
   {
+    mode,
     entry: './src/keybinding-preload/index.js',
     target: 'electron-main',
     output: {
@@ -144,6 +147,7 @@ module.exports = [
     ],
   },
   {
+    mode,
     entry: './src/keybinding/index.ts',
     target: 'web',
     output: {
