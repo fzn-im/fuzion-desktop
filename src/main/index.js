@@ -1,4 +1,4 @@
-const { app, systemPreferences, Menu, BrowserWindow } = require('electron');
+const { app, systemPreferences, Menu, BrowserWindow, clipboard, shell } = require('electron');
 const { fork } = require('child_process');
 
 const FuzionElectron = require('./fuzion-electron');
@@ -13,9 +13,24 @@ if (!instanceLock) {
 let iohook;
 let iohookRestart = true;
 
+function isHttpUrl(url) {
+  return /^https?:\/\//i.test(url);
+}
+
 function attachContextMenu(contents) {
   contents.on('context-menu', (event, params) => {
-    const { isEditable, editFlags, selectionText } = params;
+    const {
+      isEditable,
+      editFlags,
+      selectionText,
+      linkURL,
+      linkText,
+      mediaType,
+      srcURL,
+      hasImageContents,
+      x,
+      y,
+    } = params;
 
     if (isEditable) {
       event.preventDefault();
@@ -32,6 +47,101 @@ function attachContextMenu(contents) {
         { type: 'separator' },
         { role: 'selectAll', enabled: editFlags.canSelectAll },
       ];
+
+      const menu = Menu.buildFromTemplate(template);
+      const win = BrowserWindow.fromWebContents(contents);
+      menu.popup({ window: win ?? undefined });
+      return;
+    }
+
+    if (mediaType === 'image' && srcURL && srcURL.length > 0) {
+      event.preventDefault();
+
+      const template = [];
+
+      if (hasImageContents) {
+        template.push({
+          label: 'Copy Image',
+          click: () => {
+            contents.copyImageAt(x, y);
+          },
+        });
+      }
+
+      template.push({
+        label: 'Copy Image Address',
+        click: () => {
+          clipboard.writeText(srcURL);
+        },
+      });
+
+      if (isHttpUrl(srcURL)) {
+        template.push({
+          label: 'Open Image',
+          click: () => {
+            void shell.openExternal(srcURL);
+          },
+        });
+      }
+
+      if (linkURL && linkURL.length > 0) {
+        template.push({ type: 'separator' });
+        template.push({
+          label: 'Open Link',
+          click: () => {
+            void shell.openExternal(linkURL);
+          },
+        });
+        template.push({
+          label: 'Copy Link Address',
+          click: () => {
+            clipboard.writeText(linkURL);
+          },
+        });
+
+        if (linkText != null && linkText.length > 0) {
+          template.push({
+            label: 'Copy Link Text',
+            click: () => {
+              clipboard.writeText(linkText);
+            },
+          });
+        }
+      }
+
+      const menu = Menu.buildFromTemplate(template);
+      const win = BrowserWindow.fromWebContents(contents);
+      menu.popup({ window: win ?? undefined });
+      return;
+    }
+
+    if (linkURL && linkURL.length > 0) {
+      event.preventDefault();
+
+      const template = [
+        {
+          label: 'Open Link',
+          click: () => {
+            void shell.openExternal(linkURL);
+          },
+        },
+        { type: 'separator' },
+        {
+          label: 'Copy Link Address',
+          click: () => {
+            clipboard.writeText(linkURL);
+          },
+        },
+      ];
+
+      if (linkText != null && linkText.length > 0) {
+        template.push({
+          label: 'Copy Link Text',
+          click: () => {
+            clipboard.writeText(linkText);
+          },
+        });
+      }
 
       const menu = Menu.buildFromTemplate(template);
       const win = BrowserWindow.fromWebContents(contents);

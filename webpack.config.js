@@ -7,6 +7,8 @@ const sassLoaderOptions = {
   api: 'modern-compiler',
   sassOptions: {
     loadPaths: [ path.resolve(__dirname, '.'), path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules') ],
+    // fuzionkit (and other deps) still use @import; silence until upstream moves to @use
+    silenceDeprecations: [ 'import' ],
   },
   sourceMap: true,
 };
