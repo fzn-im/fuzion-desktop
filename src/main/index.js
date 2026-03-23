@@ -1,4 +1,4 @@
-const { app, systemPreferences } = require('electron');
+const { app, systemPreferences, Menu, BrowserWindow } = require('electron');
 const { fork } = require('child_process');
 
 const FuzionElectron = require('./fuzion-electron');
@@ -13,7 +13,37 @@ if (!instanceLock) {
 let iohook;
 let iohookRestart = true;
 
+function attachEditableContextMenu(contents) {
+  contents.on('context-menu', (_event, params) => {
+    const { isEditable, editFlags } = params;
+    if (!isEditable) {
+      return;
+    }
+
+    const template = [
+      { role: 'undo', enabled: editFlags.canUndo },
+      { role: 'redo', enabled: editFlags.canRedo },
+      { type: 'separator' },
+      { role: 'cut', enabled: editFlags.canCut },
+      { role: 'copy', enabled: editFlags.canCopy },
+      { role: 'paste', enabled: editFlags.canPaste },
+      { role: 'pasteAndMatchStyle', enabled: editFlags.canPaste },
+      { role: 'delete', enabled: editFlags.canDelete },
+      { type: 'separator' },
+      { role: 'selectAll', enabled: editFlags.canSelectAll },
+    ];
+
+    const menu = Menu.buildFromTemplate(template);
+    const win = BrowserWindow.fromWebContents(contents);
+    menu.popup({ window: win ?? undefined });
+  });
+}
+
 app.on('ready', () => {
+  app.on('web-contents-created', (_event, contents) => {
+    attachEditableContextMenu(contents);
+  });
+
   global.fuzionElectron = new FuzionElectron();
 
   if (process.platform === 'darwin' && !systemPreferences.isTrustedAccessibilityClient(false)) {
