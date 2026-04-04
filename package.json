@@ -88,6 +88,7 @@
       "icon": "src/assets/icon/icon.icns",
       "hardenedRuntime": false,
       "extendInfo": {
+        "NSScreenCaptureUsageDescription": "Fuzion needs screen recording to share your screen in calls.",
         "NSMicrophoneUsageDescription": "Please give us access to your microphone",
         "NSCameraUsageDescription": "Please give us access to your camera",
         "com.apple.security.device.audio-input": true,
