@@ -1,7 +1,7 @@
 class SanitizedIpc {
   #funcs = new WeakMap();
 
-  getOr (fn) {
+  getOr(fn) {
     let sanitizedFn = this.#funcs.get(fn);
 
     if (sanitizedFn) {

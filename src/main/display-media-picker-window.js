@@ -11,7 +11,19 @@ const {
 
 let currentDisplayMediaPicker = null;
 
-function serializeSources (nativeSources) {
+function dispatchCallback(callback, ...args) {
+  if (typeof callback !== 'function') {
+    return;
+  }
+
+  try {
+    callback(...args);
+  } catch (err) {
+    console.error('display-media-picker: callback threw', err);
+  }
+}
+
+function serializeSources(nativeSources) {
   return nativeSources.map((src) => ({
     id: src.id,
     name: src.name,
@@ -29,7 +41,7 @@ class DisplayMediaPickerWindow {
   request = null;
   callback = null;
 
-  constructor ({ rawSources, request, callback }) {
+  constructor({ rawSources, request, callback }) {
     this.rawSources = rawSources;
     this.request = request;
     this.callback = callback;
@@ -44,7 +56,8 @@ class DisplayMediaPickerWindow {
       height: 560,
       show: false,
       webPreferences: {
-        nodeIntegration: true,
+        contextIsolation: true,
+        nodeIntegration: false,
         sandbox: false,
         webSecurity: false,
         preload: path.join(getBuildPath(), './display-media-picker-preload.js'),
@@ -72,15 +85,18 @@ class DisplayMediaPickerWindow {
 
     const payload = serializeSources(rawSources);
 
-    this.window.loadURL(`file://${getBuildPath()}/display-media-picker.html`);
+    // Use loadFile (not file:// + path) so Windows paths resolve correctly in Chromium.
+    void this.window.loadFile(path.join(getBuildPath(), 'display-media-picker.html'));
     this.window.setTitle('Share screen');
 
     this.window.webContents.once('did-finish-load', () => {
       if (this.window.isDestroyed()) {
         return;
       }
+
       this.window.webContents.send(FUZION_DISPLAY_MEDIA_PICKER_SOURCES, payload);
       this.window.show();
+      // this.window.webContents.openDevTools({ mode: 'detach' });
     });
   }
 
@@ -88,9 +104,10 @@ class DisplayMediaPickerWindow {
     if (this.resolved) {
       return;
     }
+
     this.resolved = true;
     this.detachIpc();
-    this.callback({});
+    dispatchCallback(this.callback, {});
     currentDisplayMediaPicker = null;
   };
 
@@ -98,14 +115,17 @@ class DisplayMediaPickerWindow {
     if (this.resolved || !this.window || this.window.isDestroyed()) {
       return;
     }
+
     if (BrowserWindow.fromWebContents(event.sender) !== this.window) {
       return;
     }
+
     const src = this.rawSources.find((s) => s.id === sourceId);
     if (!src) {
       this.cancel();
       return;
     }
+
     this.resolved = true;
     this.detachIpc();
 
@@ -117,7 +137,7 @@ class DisplayMediaPickerWindow {
       streams.audio = 'loopback';
     }
 
-    this.callback(streams);
+    dispatchCallback(this.callback, streams);
     currentDisplayMediaPicker = null;
     this.window.close();
   };
@@ -132,27 +152,29 @@ class DisplayMediaPickerWindow {
     this.cancel();
   };
 
-  cancel () {
+  cancel() {
     if (this.resolved || !this.window || this.window.isDestroyed()) {
       return;
     }
+
     this.resolved = true;
     this.detachIpc();
-    this.callback({});
+    dispatchCallback(this.callback, {});
     currentDisplayMediaPicker = null;
     this.window.close();
   }
 
-  detachIpc () {
+  detachIpc() {
     ipcMain.removeListener(FUZION_DISPLAY_MEDIA_PICKER_SELECT, this.onSelect);
     ipcMain.removeListener(FUZION_DISPLAY_MEDIA_PICKER_CANCEL, this.onCancel);
+
     if (this.window && !this.window.isDestroyed()) {
       this.window.removeListener('close', this.onWindowClose);
     }
   }
 }
 
-function openDisplayMediaPickerWindow ({ rawSources, request, callback }) {
+function openDisplayMediaPickerWindow({ rawSources, request, callback }) {
   return new DisplayMediaPickerWindow({ rawSources, request, callback });
 }
 

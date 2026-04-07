@@ -6,19 +6,19 @@
 
   const sanitizedIpc = new SanitizedIpc();
 
-  function send (event, ...args) {
+  function send(event, ...args) {
     ipc.send(event, ...args);
   }
 
-  function on (event, callback) {
+  function on(event, callback) {
     ipc.on(event, sanitizedIpc.getOr(callback));
   }
 
-  function once (event, callback) {
+  function once(event, callback) {
     ipc.once(event, sanitizedIpc.getOr(callback));
   }
 
-  function off (event, callback) {
+  function off(event, callback) {
     ipc.removeListener(event, sanitizedIpc.getOr(callback));
   }
 

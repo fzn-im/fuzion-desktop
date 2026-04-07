@@ -8,21 +8,40 @@
     FUZION_DISPLAY_MEDIA_PICKER_CANCEL,
   } = require('../main/ipc-channels');
 
-  function onSources (callback) {
-    ipc.on(FUZION_DISPLAY_MEDIA_PICKER_SOURCES, (_evt, sources) => {
-      callback(sources);
+  const subscribers = [];
+  let lastSources = null;
+
+  // SanitizedIpc strips the ipc event; this callback receives only the payload
+  // (one argument). Do not use (_evt, sources) or `sources` is always undefined.
+  ipc.on(FUZION_DISPLAY_MEDIA_PICKER_SOURCES, (sources) => {
+    lastSources = Array.isArray(sources) ? sources : [];
+    subscribers.forEach((cb) => {
+      cb(lastSources);
     });
+  });
+
+  function onSources(callback) {
+    subscribers.push(callback);
+
+    if (lastSources !== null) {
+      queueMicrotask(() => {
+        callback(lastSources);
+      });
+    }
   }
 
-  function offSources (callback) {
-    ipc.off(FUZION_DISPLAY_MEDIA_PICKER_SOURCES, callback);
+  function offSources(callback) {
+    const i = subscribers.indexOf(callback);
+    if (i !== -1) {
+      subscribers.splice(i, 1);
+    }
   }
 
-  function selectSource (sourceId) {
+  function selectSource(sourceId) {
     ipc.send(FUZION_DISPLAY_MEDIA_PICKER_SELECT, sourceId);
   }
 
-  function cancel () {
+  function cancel() {
     ipc.send(FUZION_DISPLAY_MEDIA_PICKER_CANCEL);
   }
 

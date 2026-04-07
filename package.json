@@ -45,7 +45,7 @@
     "fuzionkit": "git+https://github.com/fzn-im/fuzionkit.git",
     "html-webpack-plugin": "^5.5.3",
     "license-report": "^6.4.0",
-    "lit": "^2.7.6",
+    "lit": "^3.1.2",
     "lit-scss-loader": "^2.0.1",
     "mini-css-extract-plugin": "^2.7.6",
     "resolve-url-loader": "^5.0.0",
@@ -79,7 +79,8 @@
         "to": ".",
         "filter": [
           "**/*-preload.*",
-          "**/keybinding.*"
+          "**/keybinding.*",
+          "**/display-media-picker.*"
         ]
       }
     ],
