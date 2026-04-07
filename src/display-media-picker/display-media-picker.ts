@@ -70,6 +70,30 @@ export class DisplayMediaPickerApp extends LitElement {
         gap: .75rem;
         padding: .75rem;
         box-sizing: border-box;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, .22) rgba(0, 0, 0, .45);
+      }
+
+      .scroll::-webkit-scrollbar
+      {
+        width: 8px;
+      }
+
+      .scroll::-webkit-scrollbar-track
+      {
+        background: rgba(0, 0, 0, .45);
+        border-radius: 4px;
+      }
+
+      .scroll::-webkit-scrollbar-thumb
+      {
+        background: rgba(255, 255, 255, .2);
+        border-radius: 4px;
+      }
+
+      .scroll::-webkit-scrollbar-thumb:hover
+      {
+        background: rgba(255, 255, 255, .32);
       }
 
       .section-title
