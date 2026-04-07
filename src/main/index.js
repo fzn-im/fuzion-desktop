@@ -10,6 +10,11 @@ const FuzionElectron = require('./fuzion-electron');
 const { attachContextMenu } = require('./context-menu');
 const { openDisplayMediaPickerWindow } = require('./display-media-picker-window');
 
+/** Linux (PipeWire/Wayland): desktopCapturer often exposes one stub source; use Chromium/portal picker instead. */
+const useLinuxSystemDisplayPicker =
+  process.platform === 'linux' &&
+  process.env.FUZION_CUSTOM_DISPLAY_MEDIA_PICKER !== '1';
+
 // Optional: can help Wayland screen capture but often breaks mic / voice WebRTC on Linux.
 if (process.platform === 'linux' && process.env.FUZION_PIPEWIRE_SCREEN_CAPTURE === '1') {
   app.commandLine.appendSwitch('enable-features', 'WebRTCPipeWireCapturer');
@@ -32,12 +37,14 @@ function attachSessionMediaHandlers(s) {
     callback(true);
   });
 
-  // getDisplayMedia: in Electron this must be satisfied via desktopCapturer, not only permissions.
+  // getDisplayMedia: custom picker on win32/darwin; Linux uses default handler so xdg-desktop-portal / system UI can run.
   s.setDisplayMediaRequestHandler((request, callback) => {
     void desktopCapturer
       .getSources({
         types: ['screen', 'window'],
-        thumbnailSize: { width: 320, height: 180 },
+        thumbnailSize: useLinuxSystemDisplayPicker
+          ? { width: 0, height: 0 }
+          : { width: 320, height: 180 },
         fetchWindowIcons: false,
       })
       .then((sources) => {
@@ -63,8 +70,13 @@ function attachSessionMediaHandlers(s) {
           callback(streams);
         };
 
-        if (ordered.length === 1) {
+        if (ordered.length === 1 || useLinuxSystemDisplayPicker) {
           pick(ordered[0]);
+          return;
+        }
+
+        if (useLinuxSystemDisplayPicker) {
+          callback({});
           return;
         }
 
