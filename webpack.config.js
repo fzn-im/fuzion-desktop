@@ -193,4 +193,69 @@ module.exports = [
       }),
     ],
   },
+  {
+    mode,
+    entry: './src/display-media-picker-preload/index.js',
+    target: 'electron-main',
+    output: {
+      path: path.join(__dirname, 'build'),
+      filename: 'display-media-picker-preload.js',
+    },
+    node: {
+      __dirname: false,
+    },
+    externals: {
+      process: 'process',
+    },
+    plugins: [
+      new DefinePlugin({
+        WEBPACK_BUNDLE: true,
+      }),
+    ],
+  },
+  {
+    mode,
+    entry: './src/display-media-picker/index.ts',
+    target: 'web',
+    output: {
+      path: path.join(__dirname, 'build'),
+      filename: 'display-media-picker.js',
+    },
+    node: {
+      __dirname: false,
+    },
+    externals: {
+      process: 'process',
+    },
+    module: {
+      rules: tsRules,
+    },
+    resolve: {
+      extensions: [ '.js', '.jsx', '.ts', '.tsx', '.mjs' ],
+    },
+    plugins: [
+      new DefinePlugin({
+        WEBPACK_BUNDLE: true,
+      }),
+      new MiniCssExtractPlugin({
+        filename: 'display-media-picker.css',
+        chunkFilename: 'development' === 'development' ? '[id].css' : '[id].[hash].css',
+      }),
+      new HtmlWebpackPlugin({
+        filename: 'display-media-picker.html',
+        template: 'src/display-media-picker/index.hbs',
+        inject: 'head',
+        minify: {
+          removeAttributeQuotes: true,
+          collapseWhitespace: true,
+          html5: true,
+          minifyCSS: true,
+          removeComments: true,
+          removeEmptyAttributes: true,
+        },
+        hash: true,
+        cacheBreaker: Math.round(Math.random() * 1024 * 8),
+      }),
+    ],
+  },
 ];

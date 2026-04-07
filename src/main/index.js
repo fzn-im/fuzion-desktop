@@ -2,13 +2,13 @@ const {
   app,
   BrowserWindow,
   desktopCapturer,
-  dialog,
   systemPreferences,
 } = require('electron');
 const { fork } = require('child_process');
 
 const FuzionElectron = require('./fuzion-electron');
 const { attachContextMenu } = require('./context-menu');
+const { openDisplayMediaPickerWindow } = require('./display-media-picker-window');
 
 // Optional: can help Wayland screen capture but often breaks mic / voice WebRTC on Linux.
 if (process.platform === 'linux' && process.env.FUZION_PIPEWIRE_SCREEN_CAPTURE === '1') {
@@ -37,7 +37,7 @@ function attachSessionMediaHandlers(s) {
     void desktopCapturer
       .getSources({
         types: ['screen', 'window'],
-        thumbnailSize: { width: 0, height: 0 },
+        thumbnailSize: { width: 320, height: 180 },
         fetchWindowIcons: false,
       })
       .then((sources) => {
@@ -46,13 +46,10 @@ function attachSessionMediaHandlers(s) {
           return;
         }
 
-        const maxButtons = 24;
+        const maxItems = 36;
         const screens = sources.filter((src) => src.id.startsWith('screen:'));
         const wins = sources.filter((src) => src.id.startsWith('window:'));
-        const ordered = [...screens, ...wins ].slice(0, maxButtons);
-
-        const parent =
-          BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+        const ordered = [ ...screens, ...wins ].slice(0, maxItems);
 
         const pick = (src) => {
           const streams = {
@@ -71,28 +68,11 @@ function attachSessionMediaHandlers(s) {
           return;
         }
 
-        const labels = ordered.map((src) => {
-          const n = src.name.trim() || src.id;
-          return n.length > 48 ? `${n.slice(0, 45)}…` : n;
+        openDisplayMediaPickerWindow({
+          rawSources: ordered,
+          request,
+          callback,
         });
-        const cancelId = labels.length;
-
-        void dialog
-          .showMessageBox(parent ?? undefined, {
-            type: 'question',
-            title: 'Share screen',
-            message: 'Choose a screen or window to share.',
-            buttons: [ ...labels, 'Cancel' ],
-            cancelId,
-            defaultId: 0,
-          })
-          .then(({ response }) => {
-            if (response < 0 || response >= ordered.length) {
-              callback({});
-              return;
-            }
-            pick(ordered[response]);
-          });
       })
       .catch(() => {
         callback({});
