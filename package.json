@@ -103,7 +103,7 @@
     "win": {
       "artifactName": "fuzion-installer.${ext}",
       "icon": "src/assets/icon/icon-all.ico",
-      "signDlls": true
+      "signExts": [".dll"]
     },
     "linux": {
       "target": "tar.gz",
