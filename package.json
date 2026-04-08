@@ -22,7 +22,7 @@
     "electron-input-menu": "^2.1.0",
     "electron-is-packaged": "^1.0.2",
     "electron-log": "^4.4.8",
-    "electron-updater": "^5.3.0",
+    "electron-updater": "^6.8.0",
     "iohook": "git+https://github.com/enzious/iohook.git#fuzion-changes",
     "jsonfile": "^6.1.0",
     "keycode-enums": "^1.1.2",
@@ -39,8 +39,9 @@
     "cross-env": "^6.0.3",
     "cross-fetch": "^3.0.6",
     "css-loader": "^6.8.1",
-    "electron-builder": "^23.6.0",
-    "electron-publish": "^24.3.0",
+    "electron": "^41.1.1",
+    "electron-builder": "^26.8.0",
+    "electron-publish": "^26.8.0",
     "extract-loader": "^5.1.0",
     "fuzionkit": "git+https://github.com/fzn-im/fuzionkit.git",
     "html-webpack-plugin": "^5.5.3",
@@ -58,7 +59,7 @@
   },
   "iohook": {
     "targets": [
-      "electron-114"
+      "electron-145"
     ],
     "platforms": [
       "linux",
@@ -72,7 +73,7 @@
   },
   "build": {
     "appId": "io.braindead.Fuzion",
-    "electronVersion": "24.3.0",
+    "electronVersion": "41.1.1",
     "extraResources": [
       {
         "from": "build",
