@@ -23,7 +23,7 @@
     "electron-is-packaged": "^1.0.2",
     "electron-log": "^4.4.8",
     "electron-updater": "^6.8.0",
-    "iohook": "github:enzious/iohook#fuzion-changes",
+    "iohook": "github:enzious/iohook",
     "jsonfile": "^6.1.0",
     "keycode-enums": "^1.1.2",
     "mkdirp": "^1.0.4",
