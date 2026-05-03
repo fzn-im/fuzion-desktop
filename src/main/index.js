@@ -39,6 +39,13 @@ function attachSessionMediaHandlers(s) {
 
   // getDisplayMedia: custom picker on win32/darwin; Linux uses default handler so xdg-desktop-portal / system UI can run.
   s.setDisplayMediaRequestHandler((request, callback) => {
+    console.log('[display-media] handler entered', {
+      platform: process.platform,
+      videoRequested: request.videoRequested,
+      audioRequested: request.audioRequested,
+      useLinuxSystemDisplayPicker,
+    });
+
     void desktopCapturer
       .getSources({
         types: ['screen', 'window'],
@@ -49,6 +56,12 @@ function attachSessionMediaHandlers(s) {
       })
       .then((sources) => {
         if (sources.length === 0) {
+          console.error('[display-media] no sources available', {
+            platform: process.platform,
+            hint: process.platform === 'win32'
+              ? 'Often: screen-recording permission, secure desktop (UAC), or capturer blocked.'
+              : undefined,
+          });
           callback({});
           return;
         }
@@ -57,6 +70,14 @@ function attachSessionMediaHandlers(s) {
         const screens = sources.filter((src) => src.id.startsWith('screen:'));
         const wins = sources.filter((src) => src.id.startsWith('window:'));
         const ordered = [ ...screens, ...wins ].slice(0, maxItems);
+
+        console.log('[display-media] sources', {
+          total: sources.length,
+          screenCount: screens.length,
+          windowCount: wins.length,
+          orderedCount: ordered.length,
+        });
+        console.debug('[display-media] source ids', sources.map((s) => s.id));
 
         const pick = (src) => {
           const streams = {
@@ -70,23 +91,35 @@ function attachSessionMediaHandlers(s) {
           callback(streams);
         };
 
-        if (ordered.length === 1 || useLinuxSystemDisplayPicker) {
-          pick(ordered[0]);
-          return;
-        }
-
-        if (useLinuxSystemDisplayPicker) {
+        if (ordered.length === 0) {
+          console.error('[display-media] no screen:/window: sources after filter', {
+            platform: process.platform,
+            rawIds: sources.map((s) => s.id),
+          });
           callback({});
           return;
         }
 
+        if (useLinuxSystemDisplayPicker) {
+          const src = ordered[0];
+          console.log('[display-media] linux portal auto-pick', {
+            reason: 'linux-portal',
+            id: src.id,
+            name: src.name,
+          });
+          pick(src);
+          return;
+        }
+
+        console.log('[display-media] opening custom picker', { count: ordered.length });
         openDisplayMediaPickerWindow({
           rawSources: ordered,
           request,
           callback,
         });
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('[display-media] getSources threw', err);
         callback({});
       });
   });
