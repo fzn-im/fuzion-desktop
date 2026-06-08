@@ -20,7 +20,7 @@ linux test:
     - node --version
     - rm package-lock.json
     - npm install
-    - npm run build:preload
+    - npm run build:js
     - npm run dist
 
 darwin-arm64 test:
@@ -31,7 +31,7 @@ darwin-arm64 test:
     - node --version
     - rm package-lock.json
     - npm install
-    - npm run build:preload
+    - npm run build:js
     - npm run dist
 
 windows test:
@@ -42,7 +42,7 @@ windows test:
     - node --version
     - rm package-lock.json
     - npm install
-    - npm run build:preload
+    - npm run build:js
     - npm run dist
 
 # === BUILD RELEASE ===
@@ -113,7 +113,7 @@ linux-build staging:
     - node --version
     - rm package-lock.json
     - npm install
-    - npm run build:preload
+    - npm run build:js
     - npm run dist
 
 darwin-arm64-build staging:
@@ -124,7 +124,7 @@ darwin-arm64-build staging:
     - node --version
     - rm package-lock.json
     - npm install
-    - npm run build:preload
+    - npm run build:js
     - npm run dist
 
 windows-build staging:
@@ -135,7 +135,7 @@ windows-build staging:
     - node --version
     - rm package-lock.json
     - npm install
-    - npm run build:preload
+    - npm run build:js
     - npm run dist
     - .\scripts\sign-win.ps1 -File dist
 
@@ -154,7 +154,7 @@ linux-build testing:
     - node --version
     - rm package-lock.json
     - npm install
-    - npm run build:preload
+    - npm run build:js
     - npm run dist
 
 darwin-arm64-build testing:
@@ -165,7 +165,7 @@ darwin-arm64-build testing:
     - node --version
     - rm package-lock.json
     - npm install
-    - npm run build:preload
+    - npm run build:js
     - npm run dist
 
 windows-build testing:
@@ -176,6 +176,6 @@ windows-build testing:
     - node --version
     - rm package-lock.json
     - npm install
-    - npm run build:preload
+    - npm run build:js
     - npm run dist
     - .\scripts\sign-win.ps1 -File dist
