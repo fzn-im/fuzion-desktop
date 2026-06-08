@@ -40,8 +40,8 @@
     "cross-fetch": "^3.0.6",
     "css-loader": "^6.8.1",
     "electron": "^41.1.1",
-    "electron-builder": "^26.8.0",
-    "electron-publish": "^26.8.0",
+    "electron-builder": "^26.8.1",
+    "electron-publish": "^26.8.1",
     "extract-loader": "^5.1.0",
     "fuzionkit": "git+https://github.com/fzn-im/fuzionkit.git",
     "html-webpack-plugin": "^5.5.3",
@@ -102,8 +102,7 @@
     },
     "win": {
       "artifactName": "fuzion-installer.${ext}",
-      "icon": "src/assets/icon/icon-all.ico",
-      "signExts": [".dll"]
+      "icon": "src/assets/icon/icon-all.ico"
     },
     "linux": {
       "target": "tar.gz",

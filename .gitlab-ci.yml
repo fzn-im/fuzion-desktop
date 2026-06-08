@@ -95,6 +95,7 @@ windows-build release:
     - node scripts/extract-version.js $Env:CI_COMMIT_TAG
     - npm run build:js
     - npm run dist
+    - .\scripts\sign-win.ps1 -File dist
     - npm run publish:win
 
 # === BUILD STAGING ===
@@ -136,6 +137,7 @@ windows-build staging:
     - npm install
     - npm run build:preload
     - npm run dist
+    - .\scripts\sign-win.ps1 -File dist
 
 # === BUILD TESTING ===
 
@@ -176,3 +178,4 @@ windows-build testing:
     - npm install
     - npm run build:preload
     - npm run dist
+    - .\scripts\sign-win.ps1 -File dist
