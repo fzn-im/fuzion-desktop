@@ -102,7 +102,13 @@
     },
     "win": {
       "artifactName": "fuzion-installer.${ext}",
-      "icon": "src/assets/icon/icon-all.ico"
+      "icon": "src/assets/icon/icon-all.ico",
+      "azureSignOptions": {
+        "publisherName": "braindead.io Corporation",
+        "endpoint": "https://cus.codesigning.azure.net",
+        "codeSigningAccountName": "BraindeadIO",
+        "certificateProfileName": "Fuzion"
+      }
     },
     "linux": {
       "target": "tar.gz",
