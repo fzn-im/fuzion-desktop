@@ -95,6 +95,7 @@ windows-build release:
     - npm run build:js
     - npm run dist
     - .\scripts\sign-win.ps1 -File dist
+    - .\scripts\sign-win-hash.ps1
     - npm run publish:win
 
 # === BUILD STAGING ===
@@ -137,6 +138,7 @@ windows-build staging:
     - npm run build:js
     - npm run dist
     - .\scripts\sign-win.ps1 -File dist
+    - .\scripts\sign-win-hash.ps1
 
 # === BUILD TESTING ===
 
@@ -178,3 +180,4 @@ windows-build testing:
     - npm run build:js
     - npm run dist
     - .\scripts\sign-win.ps1 -File dist
+    - .\scripts\sign-win-hash.ps1
