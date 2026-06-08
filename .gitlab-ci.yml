@@ -36,7 +36,7 @@ darwin-arm64 test:
 windows test:
   extends: .test
   tags:
-    - windows10
+    - windows11
   script:
     - node --version
     - rm package-lock.json
@@ -85,7 +85,7 @@ darwin-arm64-build release:
 windows-build release:
   extends: .build-release
   tags:
-    - windows10
+    - windows11
   script:
     - powershell -Command "& { (Invoke-WebRequest -Uri https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer.ps1 -UseBasicParsing).Content | Invoke-Expression }"
     - node --version
@@ -129,7 +129,7 @@ darwin-arm64-build staging:
 windows-build staging:
   extends: .build-staging
   tags:
-    - windows10
+    - windows11
   script:
     - node --version
     - rm package-lock.json
@@ -170,7 +170,7 @@ darwin-arm64-build testing:
 windows-build testing:
   extends: .build-testing
   tags:
-    - windows10
+    - windows11
   script:
     - node --version
     - rm package-lock.json
