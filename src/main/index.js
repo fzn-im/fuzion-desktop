@@ -16,10 +16,27 @@ const useLinuxSystemDisplayPicker =
   process.platform === 'linux' &&
   process.env.FUZION_CUSTOM_DISPLAY_MEDIA_PICKER !== '1';
 
-// Optional: can help Wayland screen capture but often breaks mic / voice WebRTC on Linux.
-if (process.platform === 'linux' && process.env.FUZION_PIPEWIRE_SCREEN_CAPTURE === '1') {
-  app.commandLine.appendSwitch('enable-features', 'WebRTCPipeWireCapturer');
+const isLinuxWayland =
+  process.platform === 'linux' &&
+  (process.env.XDG_SESSION_TYPE === 'wayland' || Boolean(process.env.WAYLAND_DISPLAY));
+
+function applyLinuxChromiumFeatureFlags() {
+  if (process.platform !== 'linux') {
+    return;
+  }
+
+  const features = ['PulseaudioLoopbackForScreenShare'];
+
+  // Wayland screen/window capture uses PipeWire via xdg-desktop-portal.
+  // Set FUZION_PIPEWIRE_SCREEN_CAPTURE=0 if this breaks microphone / voice WebRTC.
+  if (isLinuxWayland && process.env.FUZION_PIPEWIRE_SCREEN_CAPTURE !== '0') {
+    features.push('WebRTCPipeWireCapturer');
+  }
+
+  app.commandLine.appendSwitch('enable-features', features.join(','));
 }
+
+applyLinuxChromiumFeatureFlags();
 
 const configuredSessions = new WeakSet();
 
@@ -69,11 +86,6 @@ function attachSessionMediaHandlers(s) {
 
         if (ordered.length === 1 || useLinuxSystemDisplayPicker) {
           pick(ordered[0]);
-          return;
-        }
-
-        if (useLinuxSystemDisplayPicker) {
-          callback({});
           return;
         }
 

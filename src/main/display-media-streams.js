@@ -24,7 +24,16 @@ function buildDisplayMediaStreams({ source, audioRequested, includeApplicationAu
     video: { id: source.id, name: source.name },
   };
 
-  if (!audioRequested || process.platform !== 'win32') {
+  if (!audioRequested) {
+    return streams;
+  }
+
+  if (process.platform === 'linux') {
+    streams.audio = 'loopback';
+    return streams;
+  }
+
+  if (process.platform !== 'win32') {
     return streams;
   }
 
