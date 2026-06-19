@@ -2,6 +2,7 @@ const { BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 const { getBuildPath } = require('../utils/path');
+const { buildDisplayMediaStreams } = require('./display-media-streams');
 
 const {
   FUZION_DISPLAY_MEDIA_PICKER_SOURCES,
@@ -23,7 +24,7 @@ function dispatchCallback(callback, ...args) {
   }
 }
 
-function serializeSources(nativeSources) {
+function serializeSources(nativeSources, audioRequested) {
   return nativeSources.map((src) => ({
     id: src.id,
     name: src.name,
@@ -31,6 +32,7 @@ function serializeSources(nativeSources) {
     thumbnailDataUrl: src.thumbnail && !src.thumbnail.isEmpty()
       ? src.thumbnail.toDataURL()
       : '',
+    audioRequested: Boolean(audioRequested),
   }));
 }
 
@@ -83,7 +85,7 @@ class DisplayMediaPickerWindow {
 
     this.window.on('close', this.onWindowClose);
 
-    const payload = serializeSources(rawSources);
+    const payload = serializeSources(rawSources, request.audioRequested);
 
     // Use loadFile (not file:// + path) so Windows paths resolve correctly in Chromium.
     void this.window.loadFile(path.join(getBuildPath(), 'display-media-picker.html'));
@@ -111,7 +113,7 @@ class DisplayMediaPickerWindow {
     currentDisplayMediaPicker = null;
   };
 
-  onSelect = (event, sourceId) => {
+  onSelect = (event, selection) => {
     if (this.resolved || !this.window || this.window.isDestroyed()) {
       return;
     }
@@ -119,6 +121,11 @@ class DisplayMediaPickerWindow {
     if (BrowserWindow.fromWebContents(event.sender) !== this.window) {
       return;
     }
+
+    const sourceId = typeof selection === 'string' ? selection : selection?.sourceId;
+    const includeApplicationAudio = typeof selection === 'object' && selection !== null
+      ? selection.includeAudio !== false
+      : true;
 
     const src = this.rawSources.find((s) => s.id === sourceId);
     if (!src) {
@@ -129,15 +136,11 @@ class DisplayMediaPickerWindow {
     this.resolved = true;
     this.detachIpc();
 
-    const streams = {
-      video: { id: src.id, name: src.name },
-    };
-
-    if (this.request.audioRequested && process.platform === 'win32') {
-      streams.audio = 'loopback';
-    }
-
-    dispatchCallback(this.callback, streams);
+    dispatchCallback(this.callback, buildDisplayMediaStreams({
+      source: src,
+      audioRequested: this.request.audioRequested,
+      includeApplicationAudio,
+    }));
     currentDisplayMediaPicker = null;
     this.window.close();
   };

@@ -9,6 +9,7 @@ const { fork } = require('child_process');
 const FuzionElectron = require('./fuzion-electron');
 const { attachContextMenu } = require('./context-menu');
 const { openDisplayMediaPickerWindow } = require('./display-media-picker-window');
+const { buildDisplayMediaStreams } = require('./display-media-streams');
 
 /** Linux (PipeWire/Wayland): desktopCapturer often exposes one stub source; use Chromium/portal picker instead. */
 const useLinuxSystemDisplayPicker =
@@ -58,16 +59,12 @@ function attachSessionMediaHandlers(s) {
         const wins = sources.filter((src) => src.id.startsWith('window:'));
         const ordered = [ ...screens, ...wins ].slice(0, maxItems);
 
-        const pick = (src) => {
-          const streams = {
-            video: { id: src.id, name: src.name },
-          };
-
-          if (request.audioRequested && process.platform === 'win32') {
-            streams.audio = 'loopback';
-          }
-
-          callback(streams);
+        const pick = (src, includeApplicationAudio = true) => {
+          callback(buildDisplayMediaStreams({
+            source: src,
+            audioRequested: request.audioRequested,
+            includeApplicationAudio,
+          }));
         };
 
         if (ordered.length === 1 || useLinuxSystemDisplayPicker) {

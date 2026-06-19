@@ -37,8 +37,8 @@
     }
   }
 
-  function selectSource(sourceId) {
-    ipc.send(FUZION_DISPLAY_MEDIA_PICKER_SELECT, sourceId);
+  function selectSource(sourceId, includeAudio = true) {
+    ipc.send(FUZION_DISPLAY_MEDIA_PICKER_SELECT, { sourceId, includeAudio });
   }
 
   function cancel() {

@@ -10,6 +10,7 @@
     "build:js": "webpack",
     "dist": "electron-builder",
     "license-report": "license-report",
+    "postinstall": "node scripts/install-win-app-audio.js",
     "publish:linux": "node scripts/publish-linux.js",
     "publish:mac": "node scripts/publish-mac.js",
     "publish:win": "node scripts/publish-win.js",
@@ -74,6 +75,9 @@
   "build": {
     "appId": "io.braindead.Fuzion",
     "electronVersion": "41.1.1",
+    "asarUnpack": [
+      "**/*.node"
+    ],
     "extraResources": [
       {
         "from": "build",

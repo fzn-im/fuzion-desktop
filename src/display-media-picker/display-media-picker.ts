@@ -11,6 +11,7 @@ type PickerSource = {
   name: string;
   kind: 'screen' | 'window';
   thumbnailDataUrl: string;
+  audioRequested?: boolean;
 };
 
 declare global {
@@ -18,7 +19,7 @@ declare global {
     displayMediaPicker: {
       onSources: (callback: (sources: PickerSource[]) => void) => void;
       offSources: (callback: (sources: PickerSource[]) => void) => void;
-      selectSource: (sourceId: string) => void;
+      selectSource: (sourceId: string, includeAudio?: boolean) => void;
       cancel: () => void;
     };
   }
@@ -178,6 +179,23 @@ export class DisplayMediaPickerApp extends LitElement {
         -webkit-box-orient: vertical;
       }
 
+      .audio-toggle
+      {
+        display: flex;
+        align-items: center;
+        gap: .375rem;
+        font-size: .7rem;
+        opacity: .85;
+        margin-top: .125rem;
+        cursor: pointer;
+      }
+
+      .audio-toggle input
+      {
+        margin: 0;
+        cursor: pointer;
+      }
+
       .actions
       {
         display: flex;
@@ -206,9 +224,20 @@ export class DisplayMediaPickerApp extends LitElement {
   @state()
   sources: PickerSource[] = [];
 
+  @state()
+  private windowAudioEnabled: Record<string, boolean> = {};
+
   private boundReceiveSources = (incoming: PickerSource[]) => {
     console.log(DBG, 'boundReceiveSources', { count: incoming?.length ?? 0 });
     this.sources = incoming ?? [];
+
+    const nextWindowAudio: Record<string, boolean> = { ...this.windowAudioEnabled };
+    for (const source of this.sources) {
+      if (source.kind === 'window' && source.audioRequested && nextWindowAudio[source.id] === undefined) {
+        nextWindowAudio[source.id] = true;
+      }
+    }
+    this.windowAudioEnabled = nextWindowAudio;
   };
 
   connectedCallback (): void {
@@ -224,11 +253,20 @@ export class DisplayMediaPickerApp extends LitElement {
     window.displayMediaPicker?.offSources(this.boundReceiveSources);
   }
 
-  private handlePick = (id: string) => {
+  private handlePick = (id: string, includeAudio: boolean) => {
     console.log(DBG, 'handlePick (bind handler for card)', id);
     return () => {
-      console.log(DBG, 'handlePick (click)', id);
-      window.displayMediaPicker?.selectSource(id);
+      console.log(DBG, 'handlePick (click)', id, { includeAudio });
+      window.displayMediaPicker?.selectSource(id, includeAudio);
+    };
+  };
+
+  private handleWindowAudioToggle = (id: string) => (event: Event) => {
+    event.stopPropagation();
+    const input = event.target as HTMLInputElement;
+    this.windowAudioEnabled = {
+      ...this.windowAudioEnabled,
+      [id]: input.checked,
     };
   };
 
@@ -251,11 +289,17 @@ export class DisplayMediaPickerApp extends LitElement {
       <div class="grid">
         ${
           items.map(
-            (s) => html`
+            (s) => {
+              const showWindowAudio = s.kind === 'window' && Boolean(s.audioRequested);
+              const includeAudio = showWindowAudio
+                ? this.windowAudioEnabled[s.id] !== false
+                : true;
+
+              return html`
               <button
                 type="button"
                 class="card"
-                @click=${this.handlePick(s.id)}
+                @click=${this.handlePick(s.id, includeAudio)}
               >
                 <div class="thumb-wrap">
                   ${
@@ -267,8 +311,23 @@ export class DisplayMediaPickerApp extends LitElement {
                 <div class="label" title=${s.name}>
                   ${s.name.trim() || s.id}
                 </div>
+                ${
+                  showWindowAudio
+                    ? html`
+                        <label class="audio-toggle" @click=${(e: Event) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            .checked=${includeAudio}
+                            @change=${this.handleWindowAudioToggle(s.id)}
+                          />
+                          Share application audio
+                        </label>
+                      `
+                    : null
+                }
               </button>
-            `,
+            `;
+            },
           )
         }
       </div>
