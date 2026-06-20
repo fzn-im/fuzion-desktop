@@ -9,6 +9,7 @@
 #include <tlhelp32.h>
 
 #include <algorithm>
+#include <charconv>
 #include <string>
 #include <vector>
 
@@ -30,7 +31,7 @@ bool ComparePathIgnoreCase(const std::wstring& a, const std::wstring& b) {
 
 std::wstring GetWindowClassName(HWND hwnd) {
   wchar_t class_name[256] = {};
-  const len = GetClassNameW(hwnd, class_name, static_cast<int>(sizeof(class_name) / sizeof(class_name[0])));
+  const int len = GetClassNameW(hwnd, class_name, static_cast<int>(sizeof(class_name) / sizeof(class_name[0])));
   if (len <= 0) {
     return {};
   }
@@ -217,12 +218,16 @@ bool ParseWindowNativeId(const std::string& source_id, intptr_t* out_window_id) 
     return false;
   }
 
-  try {
-    *out_window_id = std::stoll(native_id);
-    return true;
-  } catch (...) {
+  long long window_id = 0;
+  const char* begin = native_id.data();
+  const char* end = begin + native_id.size();
+  const auto result = std::from_chars(begin, end, window_id);
+  if (result.ec != std::errc() || result.ptr != end) {
     return false;
   }
+
+  *out_window_id = static_cast<intptr_t>(window_id);
+  return true;
 }
 
 std::string MakeDeviceId(const char* prefix, DWORD pid) {
